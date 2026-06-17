@@ -17,6 +17,8 @@ metadata underneath in a Times New Roman italic style.
   shooting date, camera brand, and camera model when available.
 - Manual overrides for location, camera model, brand, date, focal length,
   aperture, ISO, shutter speed, and full caption text.
+- Metadata fields that cannot be read from EXIF are omitted automatically unless
+  you add them manually.
 - macOS Times New Roman Italic font support, with fallback serif fonts on other
   systems.
 
@@ -63,6 +65,18 @@ photo-glass-board DSC03412.JPG \
   --iso 160
 ```
 
+If a field is missing from EXIF, add only the missing value:
+
+```bash
+photo-glass-board input.jpg -o output.jpg --location "Zhuhai" --iso 160
+```
+
+To add a custom field that is not covered by the built-in options:
+
+```bash
+photo-glass-board input.jpg -o output.jpg --extra-info "ND Filter" --extra-info "Tripod"
+```
+
 ## Useful Options
 
 ```text
@@ -71,6 +85,13 @@ photo-glass-board DSC03412.JPG \
 --bottom-margin-ratio    Bottom caption area ratio. Default: 0.20
 --background-blur        Blur radius for the background board. Default: 58
 --background-dim         Darkening blend for the background board. Default: 0.30
+--location               Manually add a shooting location.
+--date                   Manually add a shooting date.
+--focal-length           Manually add focal length, e.g. 105mm.
+--aperture               Manually add aperture, e.g. f/8.
+--shutter                Manually add shutter speed, e.g. 1/320s.
+--iso                    Manually add ISO, e.g. 160 or ISO160.
+--extra-info             Add any extra caption field. Can be used repeatedly.
 --brand                  Centered brand line override.
 --caption                Full centered caption override.
 --camera                 Right-side camera model override.
@@ -79,8 +100,8 @@ photo-glass-board DSC03412.JPG \
 ## Notes
 
 The script reads EXIF metadata using Pillow. Some exported or edited images may
-strip EXIF fields; use the override options when the output image is missing
-focal length, ISO, shutter speed, or other metadata.
+strip EXIF fields. Missing fields are not printed as placeholders; use the
+manual options when you want to add them back.
 
 ## License
 

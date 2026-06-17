@@ -266,30 +266,6 @@ def apply_glass_finish(photo: Image.Image, radius: int) -> Image.Image:
     return finished
 
 
-def build_metadata_line(exif: dict[str, Any], args: argparse.Namespace) -> str:
-    date = args.date or exif.get("DateTimeOriginal") or exif.get("DateTime")
-    if date:
-        date = str(date).replace(":", "-", 2)
-
-    focal = args.focal_length or format_focal_length(exif.get("FocalLength"))
-    location = args.location or exif.get("GPSDecimal")
-    iso = args.iso or exif.get("ISOSpeedRatings") or exif.get("PhotographicSensitivity")
-    shutter = args.shutter or format_shutter(exif.get("ExposureTime"))
-
-    parts = [
-        str(value)
-        for value in [
-            date,
-            focal,
-            location,
-            f"ISO {iso}" if iso else None,
-            shutter,
-        ]
-        if value
-    ]
-    return "  |  ".join(parts)
-
-
 def build_camera_line(exif: dict[str, Any], override: str | None) -> str:
     if override:
         return override
@@ -309,17 +285,26 @@ def build_brand_line(exif: dict[str, Any], override: str | None) -> str:
     return letter_spaced(brand) if brand else ""
 
 
+def format_iso(value: Any) -> str | None:
+    if value is None:
+        return None
+    text = str(value).strip()
+    if not text:
+        return None
+    return text if text.upper().startswith("ISO") else f"ISO{text}"
+
+
 def build_exposure_line(exif: dict[str, Any], args: argparse.Namespace) -> str:
     focal = args.focal_length or format_focal_length(exif.get("FocalLength"))
     aperture = args.aperture or format_aperture(exif.get("FNumber"))
     shutter = args.shutter or format_shutter(exif.get("ExposureTime"))
-    iso = args.iso or exif.get("ISOSpeedRatings") or exif.get("PhotographicSensitivity")
+    iso = format_iso(args.iso or exif.get("ISOSpeedRatings") or exif.get("PhotographicSensitivity"))
     location = args.location or exif.get("GPSDecimal")
     date = args.date or exif.get("DateTimeOriginal") or exif.get("DateTime")
     if date:
         date = str(date).replace(":", "-", 2)
 
-    parts = [focal, aperture, shutter, f"ISO{iso}" if iso else None, location, date]
+    parts = [focal, aperture, shutter, iso, location, date, *args.extra_info]
     return "    ".join(str(part) for part in parts if part)
 
 
@@ -472,6 +457,12 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--iso", help="ISO text override, e.g. 100.")
     parser.add_argument("--shutter", help="Shutter speed text override, e.g. 1/250s.")
     parser.add_argument("--caption", help="Full centered caption override.")
+    parser.add_argument(
+        "--extra-info",
+        action="append",
+        default=[],
+        help="Extra manually entered caption field. Can be passed multiple times.",
+    )
     parser.add_argument("--brand", help="Centered brand line override, e.g. Hasselblad.")
     parser.add_argument("--camera", help="Camera model override.")
     parser.add_argument("--quality", type=int, default=95, help="JPEG/WebP output quality.")
