@@ -1,0 +1,35 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "photo-glass-board"
+version = "0.1.0"
+description = "Create blurred-background photo boards with camera metadata captions."
+readme = "README.md"
+requires-python = ">=3.9"
+license = { file = "LICENSE" }
+authors = [
+  { name = "macy" }
+]
+keywords = ["photography", "exif", "image", "pillow", "caption"]
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Intended Audience :: End Users/Desktop",
+  "License :: OSI Approved :: MIT License",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.9",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Topic :: Multimedia :: Graphics",
+]
+dependencies = [
+  "pillow>=10.0.0",
+]
+
+[project.scripts]
+photo-glass-board = "photo_glass_board:main"
+
+[tool.setuptools]
+py-modules = ["photo_glass_board"]
