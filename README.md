@@ -5,6 +5,10 @@ presentation-style image board. It uses the photo itself as a blurred and
 darkened background, places the sharp photo above it, and renders camera
 metadata underneath in a Times New Roman italic style.
 
+## Example
+
+![Photo Glass Board example](examples/dsc02149_example.jpg)
+
 ## Features
 
 - Blurred photo background board inspired by mobile photo-sharing layouts.
