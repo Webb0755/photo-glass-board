@@ -288,6 +288,16 @@ def build_timestamp_line(exif: dict[str, Any], override: str | None) -> str:
     return str(timestamp).replace(":", "-", 2) if timestamp else ""
 
 
+def build_author_line(exif: dict[str, Any], override: str | None) -> str:
+    author = override or exif.get("Copyright") or exif.get("Artist")
+    if not author:
+        return ""
+    text = str(author).strip()
+    if not text:
+        return ""
+    return text if text.startswith("©") else f"© {text}"
+
+
 def format_iso(value: Any) -> str | None:
     if value is None:
         return None
@@ -366,6 +376,7 @@ def render(args: argparse.Namespace) -> None:
     draw = ImageDraw.Draw(canvas)
     brand = build_brand_line(exif, args.brand)
     metadata = args.caption or build_exposure_line(exif, args)
+    author = build_author_line(exif, args.author)
     timestamp = build_timestamp_line(exif, args.date)
 
     caption_area_y = y + photo_h
@@ -396,6 +407,14 @@ def render(args: argparse.Namespace) -> None:
         min_size=13,
         italic=True,
     )
+    author_font = fit_font(
+        draw,
+        author,
+        max_width=round(canvas_w * 0.24),
+        start_size=round(detail_font_size * 1.02),
+        min_size=13,
+        italic=True,
+    )
 
     text_color = (255, 255, 255, 238)
     brand_y = caption_area_y + round(caption_area_h * 0.30)
@@ -409,6 +428,9 @@ def render(args: argparse.Namespace) -> None:
         tw, th = text_size(draw, metadata, caption_font)
         tx = (canvas_w - tw) // 2
         draw.text((tx, detail_y), metadata, font=caption_font, fill=text_color)
+
+    if author:
+        draw.text((side_margin, detail_y), author, font=author_font, fill=(255, 255, 255, 230))
 
     if timestamp:
         tw, th = text_size(draw, timestamp, camera_font)
@@ -457,6 +479,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--iso", help="ISO text override, e.g. 100.")
     parser.add_argument("--shutter", help="Shutter speed text override, e.g. 1/250s.")
     parser.add_argument("--caption", help="Full centered caption override.")
+    parser.add_argument("--author", help="Author/copyright override, e.g. kwa or '© kwa'.")
     parser.add_argument(
         "--extra-info",
         action="append",
