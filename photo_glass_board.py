@@ -189,8 +189,8 @@ def cover_resize(image: Image.Image, size: tuple[int, int]) -> Image.Image:
 
 
 def letter_spaced(text: str, gap: str = " ") -> str:
-    compact = text.strip().upper()
-    return gap.join(char for char in compact if char != " ")
+    words = text.strip().upper().split()
+    return f"{gap * 3}".join(gap.join(char for char in word) for word in words)
 
 
 def draw_bottom_gradient(canvas: Image.Image, start_y: int) -> None:
@@ -280,9 +280,12 @@ def build_brand_line(exif: dict[str, Any], override: str | None) -> str:
     if override:
         return letter_spaced(override)
     make = str(exif.get("Make", "")).strip()
-    model = str(exif.get("Model", "")).strip()
-    brand = make or model
-    return letter_spaced(brand) if brand else ""
+    return letter_spaced(make) if make else ""
+
+
+def build_timestamp_line(exif: dict[str, Any], override: str | None) -> str:
+    timestamp = override or exif.get("DateTimeOriginal") or exif.get("DateTime")
+    return str(timestamp).replace(":", "-", 2) if timestamp else ""
 
 
 def format_iso(value: Any) -> str | None:
@@ -300,11 +303,8 @@ def build_exposure_line(exif: dict[str, Any], args: argparse.Namespace) -> str:
     shutter = args.shutter or format_shutter(exif.get("ExposureTime"))
     iso = format_iso(args.iso or exif.get("ISOSpeedRatings") or exif.get("PhotographicSensitivity"))
     location = args.location or exif.get("GPSDecimal")
-    date = args.date or exif.get("DateTimeOriginal") or exif.get("DateTime")
-    if date:
-        date = str(date).replace(":", "-", 2)
 
-    parts = [focal, aperture, shutter, iso, location, date, *args.extra_info]
+    parts = [focal, aperture, shutter, iso, location, *args.extra_info]
     return "    ".join(str(part) for part in parts if part)
 
 
@@ -366,7 +366,7 @@ def render(args: argparse.Namespace) -> None:
     draw = ImageDraw.Draw(canvas)
     brand = build_brand_line(exif, args.brand)
     metadata = args.caption or build_exposure_line(exif, args)
-    camera = build_camera_line(exif, args.camera)
+    timestamp = build_timestamp_line(exif, args.date)
 
     caption_area_y = y + photo_h
     caption_area_h = canvas_h - caption_area_y
@@ -390,7 +390,7 @@ def render(args: argparse.Namespace) -> None:
     )
     camera_font = fit_font(
         draw,
-        camera,
+        timestamp,
         max_width=round(canvas_w * 0.24),
         start_size=round(detail_font_size * 1.02),
         min_size=13,
@@ -410,10 +410,10 @@ def render(args: argparse.Namespace) -> None:
         tx = (canvas_w - tw) // 2
         draw.text((tx, detail_y), metadata, font=caption_font, fill=text_color)
 
-    if camera:
-        tw, th = text_size(draw, camera, camera_font)
+    if timestamp:
+        tw, th = text_size(draw, timestamp, camera_font)
         tx = canvas_w - side_margin - tw
-        draw.text((tx, detail_y), camera, font=camera_font, fill=(255, 255, 255, 230))
+        draw.text((tx, detail_y), timestamp, font=camera_font, fill=(255, 255, 255, 230))
 
     output_path.parent.mkdir(parents=True, exist_ok=True)
     save_image = canvas.convert("RGB")

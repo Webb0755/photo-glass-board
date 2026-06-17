@@ -18,8 +18,10 @@ metadata underneath in a Times New Roman italic style.
   - top: 10% of the photo height
   - bottom: 20% of the photo height
 - Automatic EXIF extraction for focal length, aperture, shutter speed, ISO,
-  shooting date, camera brand, and camera model when available.
-- Manual overrides for location, camera model, brand, date, focal length,
+  shooting date, and camera brand when available.
+- The footer contains only three groups by default: camera brand, exposure
+  parameters, and shooting timestamp.
+- Manual overrides for location, brand, date, focal length,
   aperture, ISO, shutter speed, and full caption text.
 - Metadata fields that cannot be read from EXIF are omitted automatically unless
   you add them manually.
@@ -61,7 +63,6 @@ Example with manual metadata:
 photo-glass-board DSC03412.JPG \
   -o DSC03412_board.jpg \
   --brand SONY \
-  --camera "SONY ILCE-7M4" \
   --location "Zhuhai" \
   --focal-length 105mm \
   --aperture f/8 \
@@ -96,9 +97,8 @@ photo-glass-board input.jpg -o output.jpg --extra-info "ND Filter" --extra-info 
 --shutter                Manually add shutter speed, e.g. 1/320s.
 --iso                    Manually add ISO, e.g. 160 or ISO160.
 --extra-info             Add any extra caption field. Can be used repeatedly.
---brand                  Centered brand line override.
+--brand                  Centered brand override. Defaults to the camera make.
 --caption                Full centered caption override.
---camera                 Right-side camera model override.
 ```
 
 ## Notes
